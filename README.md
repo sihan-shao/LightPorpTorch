@@ -46,7 +46,7 @@ pip install imageio opencv-python scikit-image
 
 - **End2End Reconstruction**
 
-    Light propagation simulation is widely used in various imaging techniques. This framework can be easily extended to these applications and can take advantage of automatic differentiation for solving reconstruction problems. [4-E2EReconstruction.ipynb](./examples/4-E2EReconstruction.ipynb) demonstrates a simple case of scanning probe microscopy imaging and the reconstruction of a single slice phase from measurements.
+    Light propagation simulation is widely used in various imaging techniques. This framework can be easily extended to these applications and can take advantage of automatic differentiation for solving reconstruction problems. [4-E2EReconstruction.ipynb](./examples/4-E2EReconstruction.ipynb) demonstrates a simple case of scanning probe microscopy imaging and the reconstruction of a single slice phase map from measurements.
 
 ## Related Projects
 
