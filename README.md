@@ -13,7 +13,7 @@
 - A variety of built-in optical components and propagators for forward modeling.
     - Light sources: Plane wave and Gaussian beam.
     - Optical elements: Various apertures, focusing lenses, and diffractive optical elements.
-    - Propagators: Angular Spectrum Method (ASM), Rayleigh-Sommerfeld Convolution (RSC), and Vectorial RSC.
+    - Propagators: Angular Spectrum Method (ASM), Rayleigh-Sommerfeld Convolution (RSC), Vectorial RSC, Fresnel and Fraunhofer propagators.
 
 - Parallel simulation for multiple wavelengths using broadcasting.
 
