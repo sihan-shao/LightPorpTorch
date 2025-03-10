@@ -18,4 +18,14 @@
 - Parallel simulation for multiple wavelengths using broadcasting.
 
     
+## Installation
+
+### Prerequisite
+Our code uses Pytorch 2.1.0 or higher which can be accelerated by multiple GPUs.
+
+Running some of the scripts may require installing additional Python packages. Just follow the terminal hints, for example install the following:
+
+```shell
+pip install imageio opencv-python scikit-image
+```
 
