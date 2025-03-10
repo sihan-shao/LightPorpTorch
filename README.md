@@ -34,7 +34,8 @@ pip install imageio opencv-python scikit-image
 
 - **[basics](./examples/1-basics.ipynb)** introduces how to build a basic datatype for wave propagation simulation and cases using ASM and RSC method.
 
-- **Scalar and Vectorial Field Propagation and Visualization**
+- **Vectorial Field Propagation and Visualization**
+
 
 - **Diffractive Optical Element Design via Automatic Differentiation**
 
