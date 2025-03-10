@@ -34,10 +34,11 @@ pip install imageio opencv-python scikit-image
 
 - **Basics** 
 
-[1-basics.ipynb](./examples/1-basics.ipynb)introduces how to build a basic datatype for wave propagation simulation and cases using ASM and RSC method.
+[1-basics.ipynb](./examples/1-basics.ipynb) introduces how to build a basic datatype for wave propagation simulation and cases using ASM and RSC method.
 
 - **Vectorial Field Propagation and Visualization**
 
+[2-prop_vis.ipynb](./examples/2-prop_vis.ipynb) demonstrates how a customized vectorial Gaussian beam propagates and shows the visualization of the $E_x$, $E_y$, and $E_z$ components.
 
 - **Diffractive Optical Element Design via Automatic Differentiation**
 
