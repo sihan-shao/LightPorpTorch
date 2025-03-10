@@ -33,6 +33,15 @@ pip install imageio opencv-python scikit-image
 ## Getting Start and Examples
 
 
+
+- **Scalar and Vectorial Field Propagation and Visualization**
+
+- **Diffractive Optical Element Design via Automatic Differentiation**
+
+- **4f System Simulation**
+
+
+
 ## Related Projects
 
 Below are some projects developed using this codebase.
