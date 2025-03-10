@@ -17,6 +17,7 @@
 
 - Parallel simulation for multiple wavelengths using broadcasting.
 
+- automatic critical distance calculation to ensure the simulation accuracy.
     
 ## Installation
 
