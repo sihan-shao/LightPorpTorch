@@ -1,6 +1,6 @@
 # ✨ LightPropTorch ✨
 
-**Efficient Multi-Wavelength Propagation Simulation**
+**Efficient Multi-Wavelength Propagation Simulation framework**
 
 **Main Features**
 
