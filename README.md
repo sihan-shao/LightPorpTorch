@@ -29,3 +29,10 @@ Running some of the scripts may require installing additional Python packages. J
 pip install imageio opencv-python scikit-image
 ```
 
+## Related Projects
+
+Here are some my projects developed based on this codebase.
+
+- Neural Dispersive Hologram for Computational Submillimeter-wave Imaging (Master's thesis) link: https://version.aalto.fi/gitlab/shaos3/NeuralDispersiveHologram
+
+- 
