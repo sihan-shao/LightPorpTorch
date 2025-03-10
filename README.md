@@ -1,6 +1,6 @@
 # ✨ LightPropTorch ✨
 
-**Efficient Multi-Wavelength Propagation Simulation with Vectorization**
+**Efficient Multi-Wavelength Propagation Simulation**
 
 **Main Features**
 
@@ -15,7 +15,7 @@
     - Optical elements: Various apertures, focusing lenses, and diffractive optical elements.
     - Propagators: Angular Spectrum Method (ASM), Rayleigh-Sommerfeld Convolution (RSC), and Vectorial RSC.
 
-- Parallel simulation for multiple wavelengths using vectorization (broadcasting).
+- Parallel simulation for multiple wavelengths using broadcasting.
 
     
 
