@@ -32,3 +32,7 @@ pip install imageio opencv-python scikit-image
 Below are some projects developed using this codebase.
 
 - **Neural Dispersive Hologram for Computational Submillimeter-wave Imaging (Master's Thesis):** [Link](https://version.aalto.fi/gitlab/shaos3/NeuralDispersiveHologram)
+
+- **Quantized THz Diffractive Optics Design via Automatic Differentiation:** [Link](https://version.aalto.fi/gitlab/shaos3/ad-thz-diffractiveoptics)
+
+- **Image Deblurring with Neural Networks Using Fourier Optics:** [Link](https://github.com/sihan-shao/DeblurNN/tree/master)
