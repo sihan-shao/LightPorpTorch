@@ -42,6 +42,8 @@ pip install imageio opencv-python scikit-image
 
 - **Diffractive Optical Element Design via Automatic Differentiation**
 
+    [3-DOEdesign.ipynb](./examples/3-DOEdesign.ipynb.ipynb) demonstrates how to optimize a full-precision and quantization diffractive optical element to generate a holographic images.
+
 - **4f System Simulation**
 
 
