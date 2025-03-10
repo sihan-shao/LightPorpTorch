@@ -38,7 +38,7 @@ pip install imageio opencv-python scikit-image
 
 - **Vectorial Field Propagation and Visualization**
 
-    [2-prop_vis.ipynb](./examples/2-prop_vis.ipynb) demonstrates how a customized vectorial Gaussian beam propagates and shows the visualization of the $E_x$, $E_y$, and $E_z$ components.
+    [2-prop_vis.ipynb](./examples/2-prop_vis.ipynb) demonstrates how a customized vectorial Gaussian beam propagates and shows the visualization of the $E_x$, $E_y$, and $E_z$ components and polarization analysis.
 
 - **Diffractive Optical Element Design via Automatic Differentiation**
 
