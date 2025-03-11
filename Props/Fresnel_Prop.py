@@ -86,8 +86,8 @@ class Fres_Prop(nn.Module):
 
     def create_frequency_grid(self, H, W, dx, dy):
         # creates the frequency coordinate grid in x and y direction
-        fx = (torch.linspace(0, H - 1, H) - (H // 2)) / (H*dx)
-        fy = (torch.linspace(0, W - 1, W) - (W // 2)) / (W*dy)
+        fx = (torch.linspace(0, H - 1, H, device=self.device) - (H // 2)) / (H*dx)
+        fy = (torch.linspace(0, W - 1, W, device=self.device) - (W // 2)) / (W*dy)
             
         meshfx, meshfy = torch.meshgrid(fx, fy, indexing='ij')
 
