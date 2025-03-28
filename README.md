@@ -17,7 +17,7 @@
 
 - Parallel simulation for multiple wavelengths using broadcasting.
 
-- automatic critical distance calculation to ensure the simulation accuracy.
+- Automatic critical distance calculation to ensure the simulation accuracy.
     
 ## Installation
 
@@ -29,6 +29,21 @@ Running some of the scripts may require installing additional Python packages. J
 ```shell
 pip install imageio opencv-python scikit-image
 ```
+
+## TODO List
+
+- [] Make the sampling size of the Fraunhofer Propagator at the target plane the same for various wavelength.
+
+- [] Implement a 4-f system example.
+
+- [] Seperate SLM and DOE class. 
+
+- [] Implement polarization modulation SLM for vectorial E-field.
+
+- [] Implement Chirped z-transform propagation algorithms. 
+
+- [] Implement off-axis propagation algorithms. Ref: "Modeling off-axis diffraction with least-sampling angular spectrum method."
+
 
 ## Getting Start and Examples
 
