@@ -34,17 +34,17 @@ pip install imageio opencv-python scikit-image
 
 - [ ] Make the sampling size of the Fraunhofer Propagator at the target plane the same for various wavelength.
 
-- [ ] Implement a 4-f system example.
+- [ ] A 4-f system example.
 
 - [ ] Seperate SLM and DOE class. 
 
-- [ ] Implement polarization modulation SLM for vectorial E-field (adds phase mask to $E_x$ and $E_y$ independently).
+- [ ] Polarization modulation SLM for vectorial E-field (adds phase mask to $E_x$ and $E_y$ independently).
 
-- [ ] Implement more Polarization-based elements such as beam splitter and linear polarizer. 
+- [ ] More Polarization-based elements such as beam splitter and linear polarizer. 
 
-- [ ] Implement Chirped z-transform propagation algorithms. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
+- [ ] Chirped z-transform propagation algorithms. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
 
-- [ ] Implement off-axis propagation algorithms. Ref: "Modeling off-axis diffraction with least-sampling angular spectrum method."
+- [ ] Off-axis propagation algorithms. Ref: "Modeling off-axis diffraction with least-sampling angular spectrum method."
 
 
 ## Getting Start and Examples
