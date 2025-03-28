@@ -38,7 +38,9 @@ pip install imageio opencv-python scikit-image
 
 - [ ] Seperate SLM and DOE class. 
 
-- [ ] Implement polarization modulation SLM for vectorial E-field.
+- [ ] Implement polarization modulation SLM for vectorial E-field (adds phase mask to $E_x$ and $E_y$ independently).
+
+- [ ] Implement more Polarization-based elements such as beam splitter and linear polarizer. 
 
 - [ ] Implement Chirped z-transform propagation algorithms. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
 
