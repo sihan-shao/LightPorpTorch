@@ -4,7 +4,7 @@
 
 **Main Features**
 
-- An abstracted optimization framework based on Pure PyTorch that supports multiple GPUs.
+- An abstracted optimization framework implemented by pure PyTorch that supports multiple GPUs.
 
 - Custom data types for scalar and vectorial electric fields, which store both spectral and spatial information, along with simple visualization methods.
     - Scalar E-field: $E(\mathbf{r}) = A(\mathbf{r})e^{-kz}$ is a 4D object with dimensions [1 × C (wavelength) × Height × Width].
