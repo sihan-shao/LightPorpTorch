@@ -40,7 +40,7 @@ pip install imageio opencv-python scikit-image
 
 - [ ] Implement polarization modulation SLM for vectorial E-field.
 
-- [ ] Implement Chirped z-transform propagation algorithms. 
+- [ ] Implement Chirped z-transform propagation algorithms. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
 
 - [ ] Implement off-axis propagation algorithms. Ref: "Modeling off-axis diffraction with least-sampling angular spectrum method."
 
