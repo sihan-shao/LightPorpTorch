@@ -31,8 +31,6 @@ def quantization(opt, lut):
     return qtz
 
 
-
-
 def score_thickness(thickness, lut, s=5., func='sigmoid'):
     # Here s is kinda representing the steepness
 
