@@ -65,7 +65,7 @@ pip install imageio opencv-python scikit-image
 
 - **4F system**
 
-    [4-4f_system.ipynb](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low.high frequency components of images.
+    [4-4f_system.ipynb](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low/high frequency components of images.
 
 ## Related Projects
 
