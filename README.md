@@ -34,7 +34,7 @@ pip install imageio opencv-python scikit-image
 
 - [ ] Make the sampling size of the Fraunhofer Propagator at the target plane the same for various wavelength.
 
-- [ ] A 4-f system example.
+- [x] A 4-f system example.
 
 - [ ] Seperate SLM and DOE class. 
 
@@ -45,6 +45,8 @@ pip install imageio opencv-python scikit-image
 - [ ] Chirped z-transform propagation algorithm. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
 
 - [ ] Off-axis propagation algorithm. Ref: "Modeling off-axis diffraction with least-sampling angular spectrum method."
+
+- [ ] Arbitrary non-parallel planes propagation algorithm. Ref: Diffraction modeling between arbitrary non-parallel planes using angular spectrum rearrangement
 
 
 ## Getting Start and Examples
@@ -60,6 +62,9 @@ pip install imageio opencv-python scikit-image
 - **Diffractive Optical Element Design via Automatic Differentiation**
 
     [3-DOEdesign.ipynb](./examples/3-DOEdesign.ipynb.ipynb) demonstrates how to optimize a full-precision and quantization diffractive optical element to generate a holographic images.
+
+- **4F system**
+    [4-4f_system.ipynb](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low.high frequency components of images.
 
 ## Related Projects
 

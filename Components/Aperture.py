@@ -38,6 +38,7 @@ class ApertureElement(nn.Module):
         
         self.aperture_type = aperture_type
         self.aperture_size = aperture_size
+        self.aperture = None
 
     
     
@@ -100,8 +101,7 @@ class ApertureElement(nn.Module):
         Mask = Mask[None, None, :, :]
         
         return Mask.to(self.device)
-    
-    
+
     def forward(self,
                 field: ElectricField
                 ) -> ElectricField:
@@ -121,9 +121,7 @@ class ApertureElement(nn.Module):
                                                             rect_width=self.aperture_size)
         elif self.aperture_type == None:
             self.aperture = torch.ones_like(field.data)
-        
-        else:
-            ValueError('No exisiting aperture shape, please define by yourself')
+
             
         out_field = self.aperture * field.data
         
