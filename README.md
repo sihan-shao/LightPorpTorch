@@ -63,7 +63,7 @@ pip install imageio opencv-python scikit-image
 
     [3-DOEdesign.ipynb](./examples/3-DOEdesign.ipynb.ipynb) demonstrates how to optimize a full-precision and quantization diffractive optical element to generate a holographic images.
 
-- **4F system**
+- **4F Optical System**
 
     [4-4f_system.ipynb](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low/high frequency components of images.
 
