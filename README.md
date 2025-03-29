@@ -32,7 +32,7 @@ pip install imageio opencv-python scikit-image
 
 ## TODO List
 
-- [ ] Make the sampling size of the Fraunhofer Propagator at the target plane the same for various wavelength.
+- [x] Make the sampling size of the Fraunhofer Propagator at the target plane the same for various wavelength.
 
 - [x] A 4-f system example.
 

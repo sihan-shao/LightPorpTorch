@@ -6,7 +6,6 @@ import torch.nn as nn
 import torchvision
 from torch.nn.functional import pad
 import matplotlib
-
 from DataType.ElectricField import ElectricField
 from utils.Helper_Functions import ft2, ift2
 
