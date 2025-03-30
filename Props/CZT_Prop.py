@@ -148,7 +148,7 @@ class CZT_prop(nn.Module):
         # A-Complex exponential term
         A = torch.exp(1j * 2 * torch.pi * D1 / Dm)
         # W-complex exponential term
-        W = torch.exp(-1j * 2 * torch.pi * (D1 - D2) / (M_out * Dm))
+        W = torch.exp(-1j * 2 * torch.pi * (D2 - D1) / (M_out * Dm))
 
         # window function (Premultiply data)
         h = torch.arange(-m + 1, max(M_out - 1, m - 1 ) + 1, device=self.device)
