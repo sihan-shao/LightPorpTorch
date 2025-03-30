@@ -67,6 +67,10 @@ pip install imageio opencv-python scikit-image
 
     [4-4f_system.ipynb](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low/high frequency components of images.
 
+- **Chirped z-transform**
+
+    [5-Chirped z-transform.ipynb](./examples/5-Chirped z-transform.ipynb) compares the computation time of RSC and ZCT methods and demonstrate how the ZCT choose the arbitray sampling number of the region of interest.
+
 ## Related Projects
 
 Below are some projects developed using this codebase.
