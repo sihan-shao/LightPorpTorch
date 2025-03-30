@@ -102,7 +102,7 @@ class CZT_prop(nn.Module):
         y_out = torch.linspace(-outputWidth * outputPixel_dy / 2, outputWidth * outputPixel_dy / 2, outputWidth, device=self.device)
         Outmeshx, Outmeshy = torch.meshgrid(x_out, y_out)
 
-        wavelengths_expand = wavelengths[None, :, None, None]  # reshape to [1, C, :, :] for broadcasting
+        wavelengths_expand = wavelengths.view(1, -1, 1, 1)  # reshape to [1, C, :, :] for broadcasting
 
         # For Bluestein method implementation: 
         # Dimension of the output field - Eq. (11) in [Ref].
@@ -153,27 +153,18 @@ class CZT_prop(nn.Module):
         # window function (Premultiply data)
         h = torch.arange(-m + 1, max(M_out - 1, m - 1 ) + 1, device=self.device)
         h = W**(h**2 / 2) 
-        #print(w.shape)
         h_sliced = h[:mp + 1]
-        #print(w_sliced.shape)
 
         # Compute the 1D Fourier Transform of 1/h up to length 2**nextpow2(mp)
         ft = torch.fft.fft(1 / h_sliced, n=np2, dim=-1) # FFT for Chirp filter [Ref Eq.10 last term]
-        #print(ft_w.shape)
         # Compute intermediate result for Bluestein's algorithm [Ref Eq.10 third term]
         b = A**(-(torch.arange(0, m, device=self.device))) * h[..., torch.arange(m - 1, 2 * m - 1, device=self.device)]
-        #print(AW.shape)  # torch.Size([1, 28, 1, 200])
         tmp = torch.tile(b, (1, 1, n, 1)).transpose(-2, -1)
-        print(tmp.shape)
         # Compute the 1D Fourier transform of input data
-        print(x.shape)
         b = torch.fft.fft(x * tmp, np2, dim=-2)
-        print(b.shape)
         # Compute the inverse Fourier transform
         s = torch.tile(ft, (1, 1, n, 1)).transpose(-2, -1)
-        print(s.shape)
         b = torch.fft.ifft(b * torch.tile(ft, (1, 1, n, 1)).transpose(-2, -1), dim=-2)
-        print(b.shape)
         return b, h
 
     def Bluestein_method(self, x, f1, f2, Dm, M_out):
@@ -203,51 +194,23 @@ class CZT_prop(nn.Module):
 
         # Length of the output sequence
         mp = m + M_out - 1
-        np2 = self.compute_np2(mp)   # FFT is more efficient when sequence length is an exact power of two.
+        # FFT is more efficient when sequence length is an exact power of two.
+        np2 = self.compute_np2(mp)
         b, h = self.compute_fft(x, D1, D2, Dm, m, n, mp, M_out, np2)
-        #print(b.shape, w.shape)
 
         # Extract the relevant portion and multiply by the window function [Ref4 Eq.10 first term]
         b = b[..., m:mp + 1, 0:n].transpose(-2, -1) * torch.tile(h[..., m - 1:mp], (1, 1, n, 1))
-        #print(b.shape)
         # create a linearly speed array from 0 to M_out-1
-        l = torch.linspace(0, M_out-1, M_out, device=self.device)[None, None, None, :]
+        l = torch.linspace(0, M_out-1, M_out, device=self.device).view(1, 1, 1, -1)
         # scale array to the frequency range [D1, D2]
-        l = l / M_out * (D2 - D1) + D1  
-        print(l)
+        l = l / M_out * (D2 - D1) + D1
 
         # Eq. S14 in Supplementaty Information Section 3 in [Ref1]. Frequency shift to center the spectrum.
         M_shift = -m / 2
         M_shift = torch.tile(torch.exp(-1j * 2 * torch.pi * l * (M_shift + 1 / 2) / Dm), (1, 1, n, 1))
-        #print(M_shift)
         # Apply the frequency shift to the final output
         b = b * M_shift
         return b
-
-    def CZT(self, field, z, wavelengths, outputHeight, outputWidth, outputdx, outputdy, outputmeshx, outputmeshy, inputmeshx, inputmeshy, Dm, fx_1, fx_2, fy_1, fy_2):
-        """
-        [From CZT]: Diffraction integral implementation using Bluestein method.
-        [Ref] Hu, Y., et al. Light Sci Appl 9, 119 (2020).
-        """  
-
-        # compute the RS transfer function for input and output plane
-        F0 = self.RS_kernel(z, outputmeshx, outputmeshy, wavelengths)  # kernel shape should be [1, wavelength, H, W]
-        F  = self.RS_kernel(z, inputmeshx, inputmeshy, wavelengths)
-    
-        # Compute (E0 x F) in Eq.(6) in [Ref].
-        field = field.data * F
-
-        # Bluestein method implementation:
-
-        # (1) FFT in Y-dimension:
-        U = self.Bluestein_method(field, fy_1, fy_2, Dm, outputWidth)
-
-        # (2) FFT in X-dimension using output from (1):
-        U = self.Bluestein_method(U, fx_1, fx_2, Dm, outputHeight)
-
-        field = F0 * U * z * outputdx * outputdy * wavelengths[None, :, None, None]
-
-        return field
 
     def forward(self, 
                 field: ElectricField, 
@@ -292,21 +255,22 @@ class CZT_prop(nn.Module):
         Inmeshx, Inmeshy, Outmeshx, Outmeshy, Dm, fx_1, fx_2, fy_1, fy_2 = self.build_CZT_grid(self._z, wavelengths,
                                                                                             InputHeight, InputWidth, InputPixel_dx, InputPixel_dy, 
                                                                                             outputHeight, outputWidth, outputPixel_dx, outputPixel_dy)
-
         # Compute the diffraction integral using Bluestein method
-        
-        field_out = self.CZT(field, self._z, wavelengths, 
-                            outputHeight, outputWidth, 
-                            outputPixel_dx, outputPixel_dy, 
-                            Outmeshx, Outmeshy, 
-                            Inmeshx, Inmeshy, 
-                            Dm, 
-                            fx_1, fx_2, 
-                            fy_1, fy_2)
-
+        # compute the RS transfer function for input and output plane
+        F0 = self.RS_kernel(self._z, Outmeshx, Outmeshy, wavelengths)  # kernel shape should be [1, wavelength, H, W]
+        F  = self.RS_kernel(self._z, Inmeshx, Inmeshy, wavelengths)
+        # Compute (E0 x F) in Eq.(6) in [Ref].
+        field = field.data * F
+        # Bluestein method implementation:
+        # (1) FFT in Y-dimension:
+        U = self.Bluestein_method(field, fy_1, fy_2, Dm, outputWidth)
+        # (2) FFT in X-dimension using output from (1):
+        U = self.Bluestein_method(U, fx_1, fx_2, Dm, outputHeight)
+        # (3) Compute the output field
+        field = F0 * U * self._z * outputPixel_dx * outputPixel_dy * wavelengths.view(1, -1, 1, 1)
 
         Eout = ElectricField(
-				data=field_out,
+				data=field,
 				wavelengths=wavelengths,
 				spacing=[outputPixel_dx, outputPixel_dy]
 				)
