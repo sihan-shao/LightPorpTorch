@@ -42,7 +42,7 @@ pip install imageio opencv-python scikit-image
 
 - [ ] More Polarization-based elements such as beam splitter and linear polarizer. 
 
-- [ ] Chirped z-transform propagation algorithm. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
+- [x] Chirped z-transform propagation algorithm. Ref: "Efficient full-path optical calculation of scalar and vector diffraction using the Bluestein method"
 
 - [ ] Off-axis propagation algorithm. Ref: "Modeling off-axis diffraction with least-sampling angular spectrum method."
 
