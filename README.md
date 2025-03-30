@@ -53,23 +53,23 @@ pip install imageio opencv-python scikit-image
 
 - **Basics** 
 
-    [1-basics.ipynb](./examples/1-basics.ipynb) introduces how to build a basic datatype for wave propagation simulation and cases using ASM and RSC method.
+    [basics](./examples/1-basics.ipynb) introduces how to build a basic datatype for wave propagation simulation and cases using ASM and RSC method.
 
 - **Vectorial Field Propagation and Visualization**
 
-    [2-vectorial_prop_vis.ipynb](./examples/2-vectorial_prop_vis.ipynb) demonstrates how a customized vectorial Gaussian beam propagates and shows the visualization of the $E_x$, $E_y$, and $E_z$ components and polarization analysis.
+    [vectorial field propagation](./examples/2-vectorial_prop_vis.ipynb) demonstrates how a customized vectorial Gaussian beam propagates and shows the visualization of the $E_x$, $E_y$, and $E_z$ components and polarization analysis.
 
 - **Diffractive Optical Element Design via Automatic Differentiation**
 
-    [3-DOEdesign.ipynb](./examples/3-DOEdesign.ipynb.ipynb) demonstrates how to optimize a full-precision and quantization diffractive optical element to generate a holographic images.
+    [DOE design](./examples/3-DOEdesign.ipynb.ipynb) demonstrates how to optimize a full-precision and quantization diffractive optical element to generate a holographic images.
 
 - **4F Optical System**
 
-    [4-4f_system.ipynb](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low/high frequency components of images.
+    [4f_system](./examples/4-4f_system.ipynb) demonstrates how to implement and simulate a 4F optical system and apply frequency domain filtering to get low/high frequency components of images.
 
 - **Chirped z-transform**
 
-    [5-Chirped z-transform.ipynb](./examples/5-Chirped z-transform.ipynb) compares the computation time of RSC and ZCT methods and demonstrate how the ZCT choose the arbitray sampling number of the region of interest.
+    [Chirped z-transform](./examples/5-Chirped_z_transform.ipynb) compares the computation time of RSC and ZCT methods and demonstrate how the ZCT choose the arbitray sampling number of the region of interest.
 
 ## Related Projects
 
