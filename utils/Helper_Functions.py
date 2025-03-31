@@ -5,6 +5,27 @@ import torch.nn.functional as F
 import copy
 from typing import Tuple, Optional
 
+def generateGrid(res, deltaX, deltaY, centerGrids = True, centerAroundZero = True, device=None):
+	if (torch.is_tensor(deltaX)):
+		deltaX = copy.deepcopy(deltaX).squeeze().to(device=device)
+	if (torch.is_tensor(deltaY)):
+		deltaY = copy.deepcopy(deltaY).squeeze().to(device=device)
+
+	if (centerGrids):
+		if (centerAroundZero):
+			xCoords = torch.linspace(-((res[0] - 1) // 2), (res[0] - 1) // 2, res[0]).to(device=device) * deltaX
+			yCoords = torch.linspace(-((res[1] - 1) // 2), (res[1] - 1) // 2, res[1]).to(device=device) * deltaY
+		else:
+			xCoords = (torch.linspace(0, res[0] - 1, res[0]) - (res[0] // 2)).to(device=device) * deltaX
+			yCoords = (torch.linspace(0, res[1] - 1, res[1]) - (res[1] // 2)).to(device=device) * deltaY
+	else:
+		xCoords = torch.linspace(0, res[0] - 1, res[0]).to(device=device) * deltaX
+		yCoords = torch.linspace(0, res[1] - 1, res[1]).to(device=device) * deltaY
+
+	xGrid, yGrid = torch.meshgrid(xCoords, yCoords)
+
+	return xGrid, yGrid
+
 def wrap_phase(phase_u: torch.Tensor, stay_positive: bool = False) -> torch.Tensor:
     """Wrap phase values to [-π, π] or [0, 2π] range.
 
@@ -253,3 +274,118 @@ def gaussian_window(size: int, sigma: float) -> torch.Tensor:
     grid = torch.meshgrid(coords, coords, indexing='ij')
     window = torch.exp(-(grid[0] ** 2 + grid[1] ** 2) / (2 * sigma ** 2))
     return window / window.sum()
+
+
+##################### Noise Model ########################################
+import torch
+
+
+class GaussianNoise(torch.nn.Module):
+    r"""
+
+    Additive gaussian noise with standard deviation :math:`\sigma`, i.e., :math:`y=z+\epsilon` where :math:`\epsilon\sim \mathcal{N}(0,I\sigma^2)`.
+
+    It can be added to a physics operator in its construction or by setting the ``noise_model``
+    attribute of the physics operator.
+
+    :param float sigma: Standard deviation of the noise.
+
+    """
+
+    def __init__(self, sigma=0.1):
+        super().__init__()
+        self.sigma = torch.nn.Parameter(torch.tensor(sigma), requires_grad=False)
+
+    def forward(self, x):
+        r"""
+        Adds the noise to measurements x
+
+        :param torch.Tensor x: measurements
+        :returns: noisy measurements
+        """
+        return x + torch.randn_like(x) * self.sigma
+
+
+class PoissonNoise(torch.nn.Module):
+    r"""
+
+    Poisson noise is defined as
+    :math:`y = \mathcal{P}(\frac{x}{\gamma})`
+    where :math:`\gamma` is the gain.
+
+    If ``normalize=True``, the output is divided by the gain, i.e., :math:`\tilde{y} = \gamma y`.
+
+    :param float gain: gain of the noise.
+    :param bool normalize: normalize the output.
+
+    """
+
+    def __init__(self, gain=1.0, normalize=True):
+        super().__init__()
+        self.normalize = torch.nn.Parameter(
+            torch.tensor(normalize), requires_grad=False
+        )
+        self.gain = torch.nn.Parameter(torch.tensor(gain), requires_grad=False)
+
+    def forward(self, x):
+        r"""
+        Adds the noise to measurements x
+
+        :param torch.Tensor x: measurements
+        :returns: noisy measurements
+        """
+        y = torch.poisson(x / self.gain)
+        if self.normalize:
+            y *= self.gain
+        return y
+
+
+class PoissonGaussianNoise(torch.nn.Module):
+    r"""
+    Poisson-Gaussian noise is defined as
+    :math:`y = \gamma z + \epsilon` where :math:`z\sim\mathcal{P}(\frac{x}{\gamma})`
+    and :math:`\epsilon\sim\mathcal{N}(0, I \sigma^2)`.
+
+    :param float gain: gain of the noise.
+    :param float sigma: Standard deviation of the noise.
+
+    """
+
+    def __init__(self, gain=1.0, sigma=0.1):
+        super().__init__()
+        self.gain = torch.nn.Parameter(torch.tensor(gain), requires_grad=False)
+        self.sigma = torch.nn.Parameter(torch.tensor(sigma), requires_grad=False)
+
+    def forward(self, x):
+        r"""
+        Adds the noise to measurements x
+
+        :param torch.Tensor x: measurements
+        :returns: noisy measurements
+        """
+        y = torch.poisson(x / self.gain) * self.gain
+
+        y += torch.randn_like(x) * self.sigma
+        return y
+
+
+class UniformNoise(torch.nn.Module):
+    r"""
+    Uniform noise is defined as
+    :math:`y = x + \epsilon` where :math:`\epsilon\sim\mathcal{U}(-a,a)`.
+
+    :param float a: amplitude of the noise.
+    """
+
+    def __init__(self, a=0.1):
+        super().__init__()
+        self.a = torch.nn.Parameter(torch.tensor(a), requires_grad=False)
+
+    def forward(self, x):
+        r"""
+        Adds the noise to measurements x
+
+        :param torch.Tensor x: measurements
+        :returns: noisy measurements
+        """
+        return x + (torch.rand_like(x) - 0.5) * 2 * self.a

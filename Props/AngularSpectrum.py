@@ -17,7 +17,6 @@ from Props.propagation import Propagation
 3. Angular spectrum rearrangement for arbitrary non-parallel planes propagation
 """
 
-
 class ASMPropagator(Propagation):
     
     def __init__(self, 
@@ -236,3 +235,17 @@ class ASMPropagator(Propagation):
 				)
         
         return Eout
+
+
+class ScASMPropagator(Propagation):
+    """
+    Propagate light using scaled Angular Spectrum Method.
+    """
+    pass
+
+class ASRropagator(Propagation):
+    """
+    Diffraction modeling between arbitrary non-parallel
+    planes using angular spectrum rearrangement
+    """
+    pass
