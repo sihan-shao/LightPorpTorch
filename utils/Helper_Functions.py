@@ -1,41 +1,8 @@
-########################################################
-# Copyright (c) 2022 Meta Platforms, Inc. and affiliates
-#
-# Holotorch is an optimization framework for differentiable wave-propagation written in PyTorch 
-# This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
-#
-# Contact:
-# florianschiffers (at) gmail.com
-# ocossairt ( at ) fb.com
-#
-########################################################
-
-
-
-from __future__ import print_function
+import numpy as np
 import torch
 import torch.nn as nn
-import warnings
-from typing import Union
+import torch.nn.functional as F
 import copy
-
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
-warnings.filterwarnings("ignore", category=UserWarning) 
-
-def set_default_device(device: Union[str, torch.device]):
-    if not isinstance(device, torch.device):
-        device = torch.device(device)
-        
-    print(device)
-
-    if device.type == 'cuda':
-        print("TEST")
-        torch.set_default_tensor_type(torch.cuda.FloatTensor)
-        torch.cuda.set_device(device.index)
-        print("CUDA1")
-    else:
-        torch.set_default_tensor_type(torch.FloatTensor)
-        print("CUDA2")
 
 def total_variation(input: torch.tensor):
     '''
@@ -69,32 +36,24 @@ def center_difference(input: torch.tensor):
     dy[:,:,1:-1,:] = H/4*(-input[:,:,0:-2,:] + 2*input[:,:,1:-1,:] - input[:,:,2:,:])
     return dx, dy
 
-def tt(x):
-    return torch.tensor(x)
+def wrap_phase(phase_u: torch.Tensor, stay_positive: bool = False) -> torch.Tensor:
+    """Wrap phase values to [-π, π] or [0, 2π] range.
 
-def regular_grid4D(M,N,H,W, range=tt([[-1,1],[-1,1],[-1,1],[-1,1]]), device=torch.device("cpu")):
-    '''
-    Create a regular grid 4D tensor with dims M x N x H x W specified within a range 
-    '''
-    #Coordinates                 
-    x = torch.linspace(range[0,0], range[0,1], M, device=device)  
-    y = torch.linspace(range[1,0], range[1,1], N, device=device)  
-    u = torch.linspace(range[2,0], range[2,1], H, device=device)  
-    v = torch.linspace(range[3,0], range[3,1], W, device=device)  
+    Args:
+        phase_u (torch.Tensor): Unwrapped phase values tensor
+        stay_positive (bool): If True, output range is [0, 2π]. If False, [-π, π]
 
-    #Generate Coordinate Mesh and store it in the model
-    return torch.meshgrid(x,y,u,v)    
+    Returns:
+        torch.Tensor: Wrapped phase values tensor
 
-def regular_grid2D(H,W, range=tt([[-1,1],[-1,1]]), device=torch.device("cpu")):
-    '''
-    Create a regular grid 2D tensor with dims H x W specified within a range 
-    '''
-    #XCoordinates                 
-    x_c = torch.linspace(range[0,0], range[0,1], W, device=device)  
-    #YCoordinates 
-    y_c = torch.linspace(range[1,0], range[1,1], H, device=device)  
-    #Generate Coordinate Mesh and store it in the model
-    return torch.meshgrid(x_c,y_c)    
+    Examples:
+        >>> phase = torch.tensor([3.5 * np.pi, -2.5 * np.pi])
+        >>> wrapped = wrap_phase(phase)  # tensor([0.5000 * π, -0.5000 * π])
+    """
+    phase = phase_u % (2 * np.pi)
+    if not stay_positive:
+        phase[phase > torch.pi] -= 2 * np.pi
+    return phase
 
 def ft2(input, delta=1, norm = 'ortho', pad = False):
     """
@@ -158,28 +117,6 @@ def perform_ft(input, delta=1, norm = 'ortho', pad = False, flag_ifft : bool = F
         else:
             out = pool(out)
     return out
-        
-
-def generateGrid(res, deltaX, deltaY, centerGrids = True, centerAroundZero = True, device=None):
-	if (torch.is_tensor(deltaX)):
-		deltaX = copy.deepcopy(deltaX).squeeze().to(device=device)
-	if (torch.is_tensor(deltaY)):
-		deltaY = copy.deepcopy(deltaY).squeeze().to(device=device)
-
-	if (centerGrids):
-		if (centerAroundZero):
-			xCoords = torch.linspace(-((res[0] - 1) // 2), (res[0] - 1) // 2, res[0]).to(device=device) * deltaX
-			yCoords = torch.linspace(-((res[1] - 1) // 2), (res[1] - 1) // 2, res[1]).to(device=device) * deltaY
-		else:
-			xCoords = (torch.linspace(0, res[0] - 1, res[0]) - (res[0] // 2)).to(device=device) * deltaX
-			yCoords = (torch.linspace(0, res[1] - 1, res[1]) - (res[1] // 2)).to(device=device) * deltaY
-	else:
-		xCoords = torch.linspace(0, res[0] - 1, res[0]).to(device=device) * deltaX
-		yCoords = torch.linspace(0, res[1] - 1, res[1]).to(device=device) * deltaY
-
-	xGrid, yGrid = torch.meshgrid(xCoords, yCoords)
-
-	return xGrid, yGrid
 
 
 def normalize(x):
@@ -251,154 +188,115 @@ def DOE_xyz_cordinates_Generator(height_map, dxy, new_dxy=0.001 ,origin='center'
     np.savetxt(f"DOE_xyz_coordinates_{date.strftime('%Y%m%d-%H%M%S')}.csv", coordinates_xyz, delimiter=",")
 
 
-##################### Noise Model ########################################
-import torch
+    def calculate_psnr(img1: torch.Tensor, img2: torch.Tensor, data_range: Optional[float] = 1.0) -> float:
+    """Calculate Peak Signal-to-Noise Ratio between multi-channel tensors.
 
+    Args:
+        img1 (torch.Tensor): First tensor [B, Channel, R, C]
+        img2 (torch.Tensor): Second tensor [B, Channel, R, C]
+        data_range (float, optional): The data range of the input image (e.g., 1.0 for normalized images, 
+                            255 for uint8 images). If None, uses the maximum value from images.
 
-class GaussianNoise(torch.nn.Module):
-    r"""
+    Returns:
+        float: PSNR value in dB, infinity if images are identical
 
-    Additive gaussian noise with standard deviation :math:`\sigma`, i.e., :math:`y=z+\epsilon` where :math:`\epsilon\sim \mathcal{N}(0,I\sigma^2)`.
-
-    It can be added to a physics operator in its construction or by setting the ``noise_model``
-    attribute of the physics operator.
-
-    :param float sigma: Standard deviation of the noise.
-
+    Examples:
+        >>> intensity1 = light1.get_intensity()  # [B, Channel, R, C]
+        >>> intensity2 = light2.get_intensity()  # [B, Channel, R, C]
+        >>> psnr = calculate_psnr(intensity1, intensity2)
     """
-
-    def __init__(self, sigma=0.1):
-        super().__init__()
-        self.sigma = torch.nn.Parameter(torch.tensor(sigma), requires_grad=False)
-
-    def forward(self, x):
-        r"""
-        Adds the noise to measurements x
-
-        :param torch.Tensor x: measurements
-        :returns: noisy measurements
-        """
-        return x + torch.randn_like(x) * self.sigma
-
-
-class PoissonNoise(torch.nn.Module):
-    r"""
-
-    Poisson noise is defined as
-    :math:`y = \mathcal{P}(\frac{x}{\gamma})`
-    where :math:`\gamma` is the gain.
-
-    If ``normalize=True``, the output is divided by the gain, i.e., :math:`\tilde{y} = \gamma y`.
-
-    :param float gain: gain of the noise.
-    :param bool normalize: normalize the output.
-
-    """
-
-    def __init__(self, gain=1.0, normalize=True):
-        super().__init__()
-        self.normalize = torch.nn.Parameter(
-            torch.tensor(normalize), requires_grad=False
-        )
-        self.gain = torch.nn.Parameter(torch.tensor(gain), requires_grad=False)
-
-    def forward(self, x):
-        r"""
-        Adds the noise to measurements x
-
-        :param torch.Tensor x: measurements
-        :returns: noisy measurements
-        """
-        y = torch.poisson(x / self.gain)
-        if self.normalize:
-            y *= self.gain
-        return y
-
-
-class PoissonGaussianNoise(torch.nn.Module):
-    r"""
-    Poisson-Gaussian noise is defined as
-    :math:`y = \gamma z + \epsilon` where :math:`z\sim\mathcal{P}(\frac{x}{\gamma})`
-    and :math:`\epsilon\sim\mathcal{N}(0, I \sigma^2)`.
-
-    :param float gain: gain of the noise.
-    :param float sigma: Standard deviation of the noise.
-
-    """
-
-    def __init__(self, gain=1.0, sigma=0.1):
-        super().__init__()
-        self.gain = torch.nn.Parameter(torch.tensor(gain), requires_grad=False)
-        self.sigma = torch.nn.Parameter(torch.tensor(sigma), requires_grad=False)
-
-    def forward(self, x):
-        r"""
-        Adds the noise to measurements x
-
-        :param torch.Tensor x: measurements
-        :returns: noisy measurements
-        """
-        y = torch.poisson(x / self.gain) * self.gain
-
-        y += torch.randn_like(x) * self.sigma
-        return y
-
-
-class UniformNoise(torch.nn.Module):
-    r"""
-    Uniform noise is defined as
-    :math:`y = x + \epsilon` where :math:`\epsilon\sim\mathcal{U}(-a,a)`.
-
-    :param float a: amplitude of the noise.
-    """
-
-    def __init__(self, a=0.1):
-        super().__init__()
-        self.a = torch.nn.Parameter(torch.tensor(a), requires_grad=False)
-
-    def forward(self, x):
-        r"""
-        Adds the noise to measurements x
-
-        :param torch.Tensor x: measurements
-        :returns: noisy measurements
-        """
-        return x + (torch.rand_like(x) - 0.5) * 2 * self.a
+    if img1.shape != img2.shape:
+        raise ValueError("Input tensors must have the same shape")
+        
+    img2 = img2.to(img1.device)
     
+    # If data_range is None, determine it from the input images
+    if data_range is None:
+        data_range = max(torch.max(img1).item(), torch.max(img2).item())
+    
+    # If tensor is 4D [B, C, H, W], compute MSE per batch and channel, then average
+    if len(img1.shape) == 4:
+        mse = torch.mean((img1 - img2) ** 2, dim=(-1, -2))  # MSE per batch and channel
+        mse = torch.mean(mse)  # Average over batches and channels
+    else:
+        mse = torch.mean((img1 - img2) ** 2)
+    
+    if mse == 0:
+        return float('inf')
+    
+    epsilon = 1e-10
 
-########################## Look-up table helper function ########################
+    return 20 * torch.log10(data_range / torch.sqrt(mse + epsilon))
 
-def lut_mid(lut):
-    return [(a + b) / 2 for a, b in zip(lut[:-1], lut[1:])]
+def calculate_ssim(img1: torch.Tensor, img2: torch.Tensor, 
+                  window_size: int = 21, 
+                  sigma: Optional[float] = None, 
+                  data_range: float = 1.0) -> float:
+    """Calculate Structural Similarity Index between multi-channel tensors.
 
+    Args:
+        img1 (torch.Tensor): First tensor [B, Channel, H, W]
+        img2 (torch.Tensor): Second tensor [B, Channel, H, W]
+        window_size (int): Size of Gaussian window (odd number)
+        sigma (float, optional): Standard deviation of Gaussian window. 
+                               If None, defaults to window_size/6
+        data_range (float): Dynamic range of images
 
-def nearest_neighbor_search(input_val, lut, lut_midvals=None):
+    Returns:
+        float: SSIM score (-1 to 1, where 1 indicates identical images)
+
+    Examples:
+        >>> intensity1 = light1.get_intensity()  # [B, Channel, R, C]
+        >>> intensity2 = light2.get_intensity()  # [B, Channel, R, C]
+        >>> similarity = calculate_ssim(intensity1, intensity2)
     """
-    Quantize to nearest neighbor values in lut
-    :param input_val: input tensor
-    :param lut: list of discrete values supported
-    :param lut_midvals: set threshold to put into torch.searchsorted function.
-    :return:
+    if sigma is None:
+        sigma = window_size / 6
+
+    if img1.shape != img2.shape:
+        raise ValueError('Input images must have the same dimensions.')
+    
+    img2 = img2.to(img1.device)
+    window = gaussian_window(window_size, sigma).to(img1.device)
+    window = window.unsqueeze(0).unsqueeze(0)
+    
+    # Constants for numerical stability
+    C1 = (0.01 * data_range) ** 2
+    C2 = (0.03 * data_range) ** 2
+
+    # Compute means (window will be automatically broadcasted across batch and channels)
+    mu1 = F.conv2d(img1, window, padding=window_size//2, groups=img1.size(1))
+    mu2 = F.conv2d(img2, window, padding=window_size//2, groups=img2.size(1))
+    
+    mu1_sq = mu1 ** 2
+    mu2_sq = mu2 ** 2
+    mu1_mu2 = mu1 * mu2
+
+    # Compute variances and covariance
+    sigma1_sq = F.conv2d(img1 * img1, window, padding=window_size//2, groups=img1.size(1)) - mu1_sq
+    sigma2_sq = F.conv2d(img2 * img2, window, padding=window_size//2, groups=img2.size(1)) - mu2_sq
+    sigma12 = F.conv2d(img1 * img2, window, padding=window_size//2, groups=img1.size(1)) - mu1_mu2
+
+    # SSIM formula
+    ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / \
+               ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+    
+    return ssim_map.mean()
+
+def gaussian_window(size: int, sigma: float) -> torch.Tensor:
+    """Create normalized 2D Gaussian window.
+
+    Args:
+        size (int): Width and height of square window
+        sigma (float): Standard deviation of Gaussian
+
+    Returns:
+        torch.Tensor: Normalized 2D Gaussian window [size, size]
+
+    Examples:
+        >>> window = gaussian_window(11, 1.5)
     """
-    # if lut_midvals is None:
-    #     lut_midvals = torch.tensor(lut_mid(lut), dtype=torch.float32).to(input_val.device)
-    idx = nearest_idx(input_val, lut_midvals)
-    assert not torch.isnan(idx).any()
-    return lut[idx], idx
-
-
-def nearest_idx(input_val, lut_midvals):
-    """ Return nearest idx of lut per pixel """
-    input_array = input_val.detach()
-    len_lut = len(lut_midvals)
-    # print(lut_midvals.shape)
-    # idx = torch.searchsorted(lut_midvals.to(input_val.device), input_array, right=True)
-    idx = torch.bucketize(input_array, lut_midvals.to(input_val.device), right=True)
-
-    return idx % len_lut    
-
-
-########################## helper function for donn training ########################
-
-
-
+    coords = torch.arange(size, dtype=torch.float32) - size // 2
+    grid = torch.meshgrid(coords, coords, indexing='ij')
+    window = torch.exp(-(grid[0] ** 2 + grid[1] ** 2) / (2 * sigma ** 2))
+    return window / window.sum()
