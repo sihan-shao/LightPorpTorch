@@ -15,6 +15,7 @@ from Props.propagation import Propagation
 1. (Band-limit) Scalar angular spectrum method
 2. Scalable angular spectrum method
 3. Angular spectrum rearrangement for arbitrary non-parallel planes propagation
+4. Modeling off-axis diffraction with the least-sampling angular spectrum method
 """
 
 class ASMPropagator(Propagation):
@@ -247,5 +248,12 @@ class ASRropagator(Propagation):
     """
     Diffraction modeling between arbitrary non-parallel
     planes using angular spectrum rearrangement
+    """
+    pass
+
+class LsASMropagator(Propagation):
+    """
+    Modeling off-axis diffraction with the
+    least-sampling angular spectrum method
     """
     pass
