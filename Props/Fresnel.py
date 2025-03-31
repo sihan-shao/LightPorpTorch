@@ -38,9 +38,8 @@ class FresnelPropagator(Propagation):
         self.check_Zc = True
     
     def check_crucial_distance(self, dx=None, dy=None, wavelength=None):
-        range_x, range_y = self.shape[-2] * dx, self.shape[-1] * dy
         if self.type == 'tf':
-            Zc = range_x / wavelength.max()
+            Zc = self.shape[-1] * dx**2 / wavelength.max()
             print("maximum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / m))
             if self._z < Zc:
                 print("The simulation will be accurate !")
@@ -48,7 +47,7 @@ class FresnelPropagator(Propagation):
                 print("The propagation distance should be smaller than maximum propagation distance to keep simulation accurate!")
 
         if self.type == 'ir':
-            Zc = range_x / wavelength.min()
+            Zc = self.shape[-1] * dx**2 / wavelength.min()
             print("minimum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / m))
             if self._z > Zc:
                 print("The simulation will be accurate !")
