@@ -242,18 +242,21 @@ class ScASMPropagator(Propagation):
     """
     Propagate light using scaled Angular Spectrum Method.
     """
-    pass
+    def __init__(self):
+        pass
 
 class ASRropagator(Propagation):
     """
     Diffraction modeling between arbitrary non-parallel
     planes using angular spectrum rearrangement
     """
-    pass
+    def __init__(self):
+        pass
 
 class LsASMropagator(Propagation):
     """
     Modeling off-axis diffraction with the
     least-sampling angular spectrum method
     """
-    pass
+    def __init__(self):
+        pass
