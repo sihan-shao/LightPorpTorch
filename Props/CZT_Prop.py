@@ -95,12 +95,12 @@ class CZT_prop(nn.Module):
         # create grid for input plane
         x_in = torch.linspace(-InputHeight * InputPixel_dx / 2, InputHeight * InputPixel_dx / 2, InputHeight, device=self.device)
         y_in = torch.linspace(-InputWidth * InputPixel_dy / 2, InputWidth * InputPixel_dy / 2, InputWidth, device=self.device)
-        Inmeshx, Inmeshy = torch.meshgrid(x_in, y_in)
+        Inmeshx, Inmeshy = torch.meshgrid(x_in, y_in, indexing='ij')
 
         # create grid for output plane
         x_out = torch.linspace(-outputHeight * outputPixel_dx / 2, outputHeight * outputPixel_dx / 2, outputHeight, device=self.device)
         y_out = torch.linspace(-outputWidth * outputPixel_dy / 2, outputWidth * outputPixel_dy / 2, outputWidth, device=self.device)
-        Outmeshx, Outmeshy = torch.meshgrid(x_out, y_out)
+        Outmeshx, Outmeshy = torch.meshgrid(x_out, y_out, indexing='ij')
 
         wavelengths_expand = wavelengths[None, :, None, None]  # reshape to [1, C, :, :] for broadcasting
 
@@ -164,16 +164,11 @@ class CZT_prop(nn.Module):
         b = A**(-(torch.arange(0, m, device=self.device))) * h[..., torch.arange(m - 1, 2 * m - 1, device=self.device)]
         #print(AW.shape)  # torch.Size([1, 28, 1, 200])
         tmp = torch.tile(b, (1, 1, n, 1)).transpose(-2, -1)
-        print(tmp.shape)
         # Compute the 1D Fourier transform of input data
-        print(x.shape)
         b = torch.fft.fft(x * tmp, np2, dim=-2)
-        print(b.shape)
         # Compute the inverse Fourier transform
         s = torch.tile(ft, (1, 1, n, 1)).transpose(-2, -1)
-        print(s.shape)
         b = torch.fft.ifft(b * torch.tile(ft, (1, 1, n, 1)).transpose(-2, -1), dim=-2)
-        print(b.shape)
         return b, h
 
     def Bluestein_method(self, x, f1, f2, Dm, M_out):
@@ -213,8 +208,7 @@ class CZT_prop(nn.Module):
         # create a linearly speed array from 0 to M_out-1
         l = torch.linspace(0, M_out-1, M_out, device=self.device)[None, None, None, :]
         # scale array to the frequency range [D1, D2]
-        l = l / M_out * (D2 - D1) + D1  
-        print(l)
+        l = l / M_out * (D2 - D1) + D1
 
         # Eq. S14 in Supplementaty Information Section 3 in [Ref1]. Frequency shift to center the spectrum.
         M_shift = -m / 2

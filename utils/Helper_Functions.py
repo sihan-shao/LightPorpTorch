@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import copy
+from typing import Tuple, Optional
 
 def total_variation(input: torch.tensor):
     '''
@@ -187,24 +188,8 @@ def DOE_xyz_cordinates_Generator(height_map, dxy, new_dxy=0.001 ,origin='center'
 
     np.savetxt(f"DOE_xyz_coordinates_{date.strftime('%Y%m%d-%H%M%S')}.csv", coordinates_xyz, delimiter=",")
 
+def calculate_psnr(img1: torch.Tensor, img2: torch.Tensor, data_range: Optional[float] = 1.0) -> float:
 
-    def calculate_psnr(img1: torch.Tensor, img2: torch.Tensor, data_range: Optional[float] = 1.0) -> float:
-    """Calculate Peak Signal-to-Noise Ratio between multi-channel tensors.
-
-    Args:
-        img1 (torch.Tensor): First tensor [B, Channel, R, C]
-        img2 (torch.Tensor): Second tensor [B, Channel, R, C]
-        data_range (float, optional): The data range of the input image (e.g., 1.0 for normalized images, 
-                            255 for uint8 images). If None, uses the maximum value from images.
-
-    Returns:
-        float: PSNR value in dB, infinity if images are identical
-
-    Examples:
-        >>> intensity1 = light1.get_intensity()  # [B, Channel, R, C]
-        >>> intensity2 = light2.get_intensity()  # [B, Channel, R, C]
-        >>> psnr = calculate_psnr(intensity1, intensity2)
-    """
     if img1.shape != img2.shape:
         raise ValueError("Input tensors must have the same shape")
         
