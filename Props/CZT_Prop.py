@@ -307,7 +307,6 @@ class CZT_prop(nn.Module):
 
         return Eout
 
-
 class VCZT_prop(CZT_prop):
     
     def __init__(self, 

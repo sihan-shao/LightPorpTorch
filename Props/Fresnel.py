@@ -8,9 +8,9 @@ from torch.nn.functional import pad
 from DataType.ElectricField import ElectricField
 from utils.Helper_Functions import ft2, ift2
 from utils.units import *
-from Props.propagation import Propagation
+from Props.propagation import Propagation, Bluestein
 
-class FresnelPropagator(Propagation):
+class BasicFresnelPropagator(Propagation):
     
     def __init__(self, 
                  z_distance         : float = 0.0, 
@@ -82,7 +82,7 @@ class FresnelPropagator(Propagation):
             kernel = torch.exp(1j * torch.pi * wavelengths_expand * (fx**2 + fy**2))
         elif self.type == 'ir':
             x, y = self.create_spatial_grid(Pad_tempShapeH, Pad_tempShapeW, dx, dy)
-            h = 1 / (1j * wavelengths_expand * self._z) * torch.exp(1j * k / (2 * self._z) * (x**2 + y**2))
+            h = torch.exp(1j*k*self._z) / (1j * wavelengths_expand * self._z) * torch.exp(1j * k / (2 * self._z) * (x**2 + y**2))
             kernel = ft2(h) * dx * dy # to frequency space
         else:
             raise ValueError(f'Fresnel transfer function has only two types !!')
@@ -137,6 +137,103 @@ class FresnelPropagator(Propagation):
         
         return Eout 
 
+
+class BluesteinFresnelPropagator(Propagation, Bluestein):
+    
+    def __init__(self, 
+                 z_distance         : float = 0.0, 
+                 device             : str = None):
+        """
+        Fresnel impluse response propagation method with Bluestein method
+        Useful for imaging light in the focal plane: allows high resolution zoom in z-plane. 
+        [Ref 1] Hu, Y., et al. Light Sci Appl 9, 119 (2020).
+        
+        Args:
+            z_distance (float, optional): propagation distance. Defaults to 0.0.
+			
+        """
+        super().__init__()
+        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # store the input params
+        self._z = torch.tensor(z_distance, device=self.device)
+		# we don't actually know dimensions until forward is called
+        self.shape = None
+        self.check_Zc = True
+    
+    def check_crucial_distance(self, dx=None, dy=None, wavelength=None):
+
+        Zc = self.shape[-1] * dx**2 / wavelength.min()
+        print("minimum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / m))
+        if self._z > Zc:
+            print("The simulation will be accurate !")
+        else:
+            print("The propagation distance should be larger than minimum propagation distance to keep simulation accurate!")
+
+    def create_kernel(self, z, meshx, meshy, wavelengths):
+        wavelengths_expand  =  wavelengths.view(1, -1, 1, 1)
+        k = 2 * torch.pi / wavelengths_expand
+        kernel = torch.exp(1j * k * z) / (1j * wavelengths_expand * z) * torch.exp(1j * k / (2 * z) * (meshx**2 + meshy**2))
+        return kernel
+
+    def forward(self, 
+                field: ElectricField, 
+                outputHeight=None,
+				outputWidth=None, 						
+				outputPixel_dx=None, 
+				outputPixel_dy=None,					
+                ) -> ElectricField:
+        """
+        Chirped z-transform propagation - efficient diffraction using the Bluestein method.
+        Useful for imaging light in the focal plane: allows high resolution zoom in z-plane. 
+        [Ref] Hu, Y., et al. Light Sci Appl 9, 119 (2020).
+
+        Parameters:
+            field (ElectricField): Complex field 4D tensor object
+            outputHeight (int): resolution of height for the output plane.
+            outputWidth (int): resolution of width the output plane.
+            outputPixel_dx (float): physical length (height) for the output plane
+            outputPixel_dy (float): physical length (width) for the putput plane
+
+        Returns ScalarLight object after propagation.
+        """
+        InputHeight = field.height
+        InputWidth = field.width
+        InputPixel_dx = field.spacing[0]
+        InputPixel_dy = field.spacing[1]
+        wavelengths = field.wavelengths
+
+        # Set default values for outputHeight and outputPixel_dx if they are None
+        if outputHeight is None:
+            outputHeight = InputHeight
+        if outputPixel_dx is None:
+            outputPixel_dx = InputPixel_dx
+        # Set default values for outputWidth and outputPixel_dy if they are None
+        if outputWidth is None:
+            outputWidth = InputWidth
+        if outputPixel_dy is None:
+            outputPixel_dy = InputPixel_dy
         
 
+        Inmeshx, Inmeshy, Outmeshx, Outmeshy, Dm, fx_1, fx_2, fy_1, fy_2 = self.build_CZT_grid(self._z, wavelengths,
+                                                                                            InputHeight, InputWidth, InputPixel_dx, InputPixel_dy, 
+                                                                                            outputHeight, outputWidth, outputPixel_dx, outputPixel_dy)
+        # Compute the diffraction integral using Bluestein method
+        # Step 1.Compute the transfer function for input and output plane
+        F0 = self.create_kernel(self._z, Outmeshx, Outmeshy, wavelengths)
+        F  = self.create_kernel(self._z, Inmeshx, Inmeshy, wavelengths)
+        # Step 2.Compute (E0 x F) in Eq.(6) in [Ref].
+        field = field.data * F
+        # Step 3.Bluestein method implementation
+        # (1) FFT in Y-dimension
+        U = self.Bluestein_method(field, fy_1, fy_2, Dm, outputWidth)
+        # (2) FFT in X-dimension using output from (1):
+        U = self.Bluestein_method(U, fx_1, fx_2, Dm, outputHeight)
+        field = F0 * U * self._z * outputPixel_dx * outputPixel_dy * wavelengths.view(1, -1, 1, 1)
         
+        Eout = ElectricField(
+				data=field,
+				wavelengths=wavelengths,
+				spacing=[outputPixel_dx, outputPixel_dy]
+				)
+
+        return Eout

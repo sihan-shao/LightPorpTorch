@@ -5,38 +5,6 @@ import torch.nn.functional as F
 import copy
 from typing import Tuple, Optional
 
-def total_variation(input: torch.tensor):
-    '''
-    compute centerered finite difference derivative for input along dimensions dim
-    zero pad the boundary
-
-    input: 4D torch tensor with dimension 2,3 being the spatial difference
-    returns: scalar value |dx|_1 + |dy|_1  
-    '''
-    # reshape if its a 6D tensor
-    if input.ndim == 6:
-        B,T,P,C,H,W = input.shape
-        input = input.view(B*T*P,C,H,W)
-
-    dx, dy = center_difference(input)
-    return dx.abs().mean() + dy.abs().mean()
-
-def center_difference(input: torch.tensor):
-    '''
-    compute centerered finite difference derivative for input along dimensions dim
-    zero pad the boundary
-
-    input: 4D torch tensor with dimension 2,3 being the spatial difference
-    returns: dx, dy - 4D tensors same size as input 
-    '''
-    # create a new tensor of zeros for zeropadding
-    dx = torch.zeros_like(input)
-    dy = torch.zeros_like(input)
-    _, _, H, W = input.shape
-    dx[:,:,:,1:-1] = W/4*(-input[:,:,:,0:-2] + 2*input[:,:,:,1:-1] - input[:,:,:,2:])
-    dy[:,:,1:-1,:] = H/4*(-input[:,:,0:-2,:] + 2*input[:,:,1:-1,:] - input[:,:,2:,:])
-    return dx, dy
-
 def wrap_phase(phase_u: torch.Tensor, stay_positive: bool = False) -> torch.Tensor:
     """Wrap phase values to [-π, π] or [0, 2π] range.
 
