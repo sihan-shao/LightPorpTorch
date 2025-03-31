@@ -40,7 +40,7 @@ class BasicFresnelPropagator(Propagation):
     def check_crucial_distance(self, dx=None, dy=None, wavelength=None):
         if self.type == 'tf':
             Zc = self.shape[-1] * dx**2 / wavelength.max()
-            print("maximum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / m))
+            print("maximum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / mm))
             if self._z < Zc:
                 print("The simulation will be accurate !")
             else:
@@ -48,7 +48,7 @@ class BasicFresnelPropagator(Propagation):
 
         if self.type == 'ir':
             Zc = self.shape[-1] * dx**2 / wavelength.min()
-            print("minimum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / m))
+            print("minimum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / mm))
             if self._z > Zc:
                 print("The simulation will be accurate !")
             else:
@@ -163,7 +163,7 @@ class BluesteinFresnelPropagator(Propagation, Bluestein):
     def check_crucial_distance(self, dx=None, dy=None, wavelength=None):
 
         Zc = self.shape[-1] * dx**2 / wavelength.min()
-        print("minimum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / m))
+        print("minimum propagation distance to satisfy sampling for FT: {:.3f} mm".format(Zc.detach().cpu().numpy() / mm))
         if self._z > Zc:
             print("The simulation will be accurate !")
         else:
@@ -216,7 +216,7 @@ class BluesteinFresnelPropagator(Propagation, Bluestein):
 
         Inmeshx, Inmeshy, Outmeshx, Outmeshy, Dm, fx_1, fx_2, fy_1, fy_2 = self.build_CZT_grid(self._z, wavelengths,
                                                                                             InputHeight, InputWidth, InputPixel_dx, InputPixel_dy, 
-                                                                                            outputHeight, outputWidth, outputPixel_dx, outputPixel_dy)
+                                                                                             outputHeight, outputWidth, outputPixel_dx, outputPixel_dy)
         # Compute the diffraction integral using Bluestein method
         # Step 1.Compute the transfer function for input and output plane
         F0 = self.create_kernel(self._z, Outmeshx, Outmeshy, wavelengths)
