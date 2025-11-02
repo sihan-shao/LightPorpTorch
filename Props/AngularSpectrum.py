@@ -382,7 +382,8 @@ class ASRPropagator(Propagation):
     planes using angular spectrum rearrangement
     """
     def __init__(self, z_distance=0, offset_w=0, theta=0, phi=0, number_u=1100, number_v=1100, device=None):
-
+        super().__init__()
+        
         self.device = get_default_device(device)
 
         self._z = z_distance  # the propagation distance between two parallel planes

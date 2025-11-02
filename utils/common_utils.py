@@ -17,21 +17,24 @@ def create_circle_mask(input_tensor: torch.Tensor, radius: float = None) -> torc
         radius (float, optional): Radius of the circle. If None, uses min(H, W) / 2
     
     Returns:
-        torch.Tensor: Binary mask with 1 inside the circle and 0 outside
+        torch.Tensor: Binary mask with 1 inside the circle and 0 outside (same device as input)
     """
     H, W = input_tensor.shape
+    device = input_tensor.device
     # Set default radius if not provided
     if radius is None:
         radius = min(H, W) / 2
     
-    # Create a meshgrid
-    y, x = torch.meshgrid(torch.arange(0, H), torch.arange(0, W), indexing='ij')
+    # Create a meshgrid on the same device as input
+    y, x = torch.meshgrid(torch.arange(0, H, device=device), 
+                          torch.arange(0, W, device=device), 
+                          indexing='ij')
     
     # Compute distance to center
     center_y, center_x = H / 2, W / 2
     dist = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
     
-    # Create the mask
+    # Create the mask (will be on the same device as x and y)
     mask = (dist <= radius).float()
     return mask
 
