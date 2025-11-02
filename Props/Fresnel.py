@@ -30,7 +30,7 @@ class BasicFresnelPropagator(Propagation):
 
         self.do_padding = True
         self.DEFAULT_PADDING_SCALE = torch.tensor([1,1])
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
         # store the input params
         self._z = torch.tensor(z_distance, device=self.device)
         self.type = type
@@ -154,7 +154,7 @@ class BluesteinFresnelPropagator(Propagation, Bluestein):
 			
         """
         super().__init__()
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
         # store the input params
         self._z = torch.tensor(z_distance, device=self.device)
 		# we don't actually know dimensions until forward is called

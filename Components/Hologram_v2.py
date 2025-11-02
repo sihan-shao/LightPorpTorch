@@ -17,7 +17,7 @@ from utils.Visualization_Helper import float_to_unit_identifier, add_colorbar
 from DataType.ElectricField import ElectricField
 import torch.nn.functional as F
 from utils.Helper_Functions import UniformNoise
-from utils.common_utils import create_circle_mask, visualize_height_map
+from utils.common_utils import create_circle_mask, visualize_height_map, get_default_device
 
 
 BASE_PLANE_THICKNESS = 2 * 1e-3
@@ -142,10 +142,7 @@ class HologramElement(HologramLayer):
                  device         : torch.device = None) -> None:
         super(HologramElement, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
             
         self.height_map     = torch.tensor(height_map, device=device, dtype=torch.float32)
         self.tolerance      = tolerance
@@ -197,10 +194,7 @@ class QuantizedDOELayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(QuantizedDOELayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
             
         self.holo_size = holo_size
         self.num_level = num_level

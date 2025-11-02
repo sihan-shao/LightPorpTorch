@@ -146,3 +146,18 @@ def compute_wavenumber(wavelengths: torch.Tensor) -> torch.Tensor:
         torch.Tensor: Wavenumber tensor with same shape as input
     """
     return 2 * torch.pi / wavelengths
+
+
+def get_default_device(device: torch.device = None) -> torch.device:
+    """
+    Get the default device for computations.
+    
+    Args:
+        device (torch.device, optional): Device to use. If None, uses CUDA if available, else CPU.
+    
+    Returns:
+        torch.device: The device to use for computations
+    """
+    if device is None:
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return device

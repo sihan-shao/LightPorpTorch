@@ -7,6 +7,7 @@ from torch.nn.functional import pad, interpolate
 from DataType.ElectricField import ElectricField
 from torch.fft import fft2, ifft2
 from utils.units import *
+from utils.common_utils import get_default_device
 
 class Fraunhofer_Prop(nn.Module):
     
@@ -26,7 +27,7 @@ class Fraunhofer_Prop(nn.Module):
         self.DEFAULT_PADDING_SCALE = torch.tensor([1,1])
             
         # store the input params
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
 
         self._z                  = torch.tensor(z_distance, device=self.device)
         

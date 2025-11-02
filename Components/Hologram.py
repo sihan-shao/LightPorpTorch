@@ -17,7 +17,7 @@ from utils.Visualization_Helper import float_to_unit_identifier, add_colorbar
 from DataType.ElectricField import ElectricField
 import torch.nn.functional as F
 from utils.Helper_Functions import UniformNoise
-from utils.common_utils import create_circle_mask, visualize_height_map
+from utils.common_utils import create_circle_mask, visualize_height_map, get_default_device
 
 
 BASE_PLANE_THICKNESS = 2 * mm
@@ -154,10 +154,7 @@ class HologramElement(HologramLayer):
                  device         : torch.device = None) -> None:
         super(HologramElement, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
         
         self.height_map     = torch.tensor(height_map, device=self.device)
         self.tolerance      = torch.tensor(tolerance, device=self.device)
@@ -208,10 +205,7 @@ class GumbelQuantizedHologramLayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(GumbelQuantizedHologramLayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
             
         self.holo_size = holo_size
         self.holo_level = holo_level
@@ -321,10 +315,7 @@ class FullPrecisionHologramLayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(FullPrecisionHologramLayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
         
         self.holo_size = holo_size
         self.height_constraint_max = torch.tensor(height_constraint_max, device=self.device)
@@ -382,10 +373,7 @@ class PSQuantizedHologramLayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(PSQuantizedHologramLayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
             
         self.holo_size = holo_size
         self.holo_level = holo_level

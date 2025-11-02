@@ -35,7 +35,7 @@ class RSCPropagator(Propagation):
         self.do_padding = True
         self.DEFAULT_PADDING_SCALE = torch.tensor([1,1])
         # store the input params
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
         self._z                  = torch.tensor(z_distance, device=self.device)
         # the normalized spatial grid
 		# we don't actually know dimensions until forward is called
@@ -189,7 +189,7 @@ class BluesteinRSCPropagator(Propagation, Bluestein):
         super().__init__()
 
         # store the input params
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
 
         self._z = torch.tensor(z_distance, device=self.device)
     
