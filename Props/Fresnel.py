@@ -9,6 +9,7 @@ from DataType.ElectricField import ElectricField
 from utils.Helper_Functions import ft2, ift2
 from utils.units import *
 from Props.propagation import Propagation, Bluestein
+from utils.common_utils import set_default_output_dimensions, expand_wavelengths_for_broadcast, compute_wavenumber
 
 class BasicFresnelPropagator(Propagation):
     
@@ -29,7 +30,7 @@ class BasicFresnelPropagator(Propagation):
 
         self.do_padding = True
         self.DEFAULT_PADDING_SCALE = torch.tensor([1,1])
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
         # store the input params
         self._z = torch.tensor(z_distance, device=self.device)
         self.type = type
@@ -153,7 +154,7 @@ class BluesteinFresnelPropagator(Propagation, Bluestein):
 			
         """
         super().__init__()
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
         # store the input params
         self._z = torch.tensor(z_distance, device=self.device)
 		# we don't actually know dimensions until forward is called
@@ -202,17 +203,11 @@ class BluesteinFresnelPropagator(Propagation, Bluestein):
         InputPixel_dy = field.spacing[1]
         wavelengths = field.wavelengths
 
-        # Set default values for outputHeight and outputPixel_dx if they are None
-        if outputHeight is None:
-            outputHeight = InputHeight
-        if outputPixel_dx is None:
-            outputPixel_dx = InputPixel_dx
-        # Set default values for outputWidth and outputPixel_dy if they are None
-        if outputWidth is None:
-            outputWidth = InputWidth
-        if outputPixel_dy is None:
-            outputPixel_dy = InputPixel_dy
-        
+        # Set default output dimensions
+        outputHeight, outputWidth, outputPixel_dx, outputPixel_dy = set_default_output_dimensions(
+            InputHeight, InputWidth, InputPixel_dx, InputPixel_dy,
+            outputHeight, outputWidth, outputPixel_dx, outputPixel_dy
+        )
 
         Inmeshx, Inmeshy, Outmeshx, Outmeshy, Dm, fx_1, fx_2, fy_1, fy_2 = self.build_CZT_grid(self._z, wavelengths,
                                                                                             InputHeight, InputWidth, InputPixel_dx, InputPixel_dy, 

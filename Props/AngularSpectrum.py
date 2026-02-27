@@ -10,6 +10,7 @@ from DataType.ElectricField import ElectricField
 from utils.Helper_Functions import ft2, ift2
 from utils.units import *
 from Props.propagation import Propagation
+from utils.common_utils import get_default_device
 
 """
 1. (Band-limit) Scalar angular spectrum method
@@ -68,7 +69,7 @@ class ASMPropagator(Propagation):
 
         DEFAULT_PADDING_SCALE = torch.tensor([1,1])
         # store the input params
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = get_default_device(device)
 
         self._z                 = torch.tensor(z_distance, device=self.device)
         self.do_padding         = do_padding
@@ -380,9 +381,10 @@ class ASRPropagator(Propagation):
     Diffraction modeling between arbitrary non-parallel
     planes using angular spectrum rearrangement
     """
-    def __init__(self, z_distance=0, offset_w=0, theta=0, phi=0, number_u=1100, number_v=1100):
-
-        self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    def __init__(self, z_distance=0, offset_w=0, theta=0, phi=0, number_u=1100, number_v=1100, device=None):
+        super().__init__()
+        
+        self.device = get_default_device(device)
 
         self._z = z_distance  # the propagation distance between two parallel planes
         self.offset_w = offset_w # the offset of the rotated observation plane, only support scalar now !

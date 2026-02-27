@@ -17,6 +17,7 @@ from utils.Visualization_Helper import float_to_unit_identifier, add_colorbar
 from DataType.ElectricField import ElectricField
 import torch.nn.functional as F
 from utils.Helper_Functions import UniformNoise
+from utils.common_utils import create_circle_mask, visualize_height_map, get_default_device
 
 
 BASE_PLANE_THICKNESS = 2 * mm
@@ -153,10 +154,7 @@ class HologramElement(HologramLayer):
                  device         : torch.device = None) -> None:
         super(HologramElement, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
         
         self.height_map     = torch.tensor(height_map, device=self.device)
         self.tolerance      = torch.tensor(tolerance, device=self.device)
@@ -170,42 +168,7 @@ class HologramElement(HologramLayer):
                   figsize                 = (4,4)):
         """  visualize the thickness of the hologram
         """
-        
-        def circle_mask(input_tensor, radius=None):
-            H, W = input_tensor.shape
-            # Set default radius if not provided
-            if radius is None:
-                radius = min(H, W) / 2
-            # Create a meshgrid
-            y, x = torch.meshgrid(torch.arange(0, H), torch.arange(0, W))
-            
-            # Compute distance to center
-            center_y, center_x = H / 2, W / 2
-            dist = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            # Create the mask
-            mask = (dist <= radius).float()
-            return mask.detach().cpu().numpy()  
-        
-        if self.circ_aperture == True:
-            mask = circle_mask(self.height_map)
-            thickness = self.height_map.detach().cpu().numpy() * mask
-        else:
-            thickness = self.height_map.detach().cpu().numpy()
-        
-        if figsize is not None:
-            fig = plt.figure(figsize=figsize)
-            
-        # First subplot: 2D plot
-        plt.subplot(1, 1, 1)
-        _im1 = plt.imshow(thickness, cmap=cmap)  # use colormap 'viridis'
-        plt.title('2D Height Map of Hologram')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-
-        # Show the plots
-        add_colorbar(_im1)
-        plt.tight_layout()
-        plt.show()
+        visualize_height_map(self.height_map, self.circ_aperture, cmap, figsize)
     
     
     def forward(self, field: ElectricField)->ElectricField:
@@ -242,10 +205,7 @@ class GumbelQuantizedHologramLayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(GumbelQuantizedHologramLayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
             
         self.holo_size = holo_size
         self.holo_level = holo_level
@@ -270,42 +230,7 @@ class GumbelQuantizedHologramLayer(HologramLayer):
                   figsize                 = (4,4)):
         """  visualize the thickness of the hologram
         """
-        
-        def circle_mask(input_tensor, radius=None):
-            H, W = input_tensor.shape
-            # Set default radius if not provided
-            if radius is None:
-                radius = min(H, W) / 2
-            # Create a meshgrid
-            y, x = torch.meshgrid(torch.arange(0, H), torch.arange(0, W))
-            
-            # Compute distance to center
-            center_y, center_x = H / 2, W / 2
-            dist = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            # Create the mask
-            mask = (dist <= radius).float()
-            return mask.detach().cpu().numpy()  
-        
-        if self.circ_aperture == True:
-            mask = circle_mask(self.height_map)
-            thickness = self.height_map.detach().cpu().numpy() * mask
-        else:
-            thickness = self.height_map.detach().cpu().numpy()
-        
-        if figsize is not None:
-            fig = plt.figure(figsize=figsize)
-            
-        # First subplot: 2D plot
-        plt.subplot(1, 1, 1)
-        _im1 = plt.imshow(thickness, cmap=cmap)  # use colormap 'viridis'
-        plt.title('2D Height Map of Hologram')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-
-        # Show the plots
-        add_colorbar(_im1)
-        plt.tight_layout()
-        plt.show()
+        visualize_height_map(self.height_map, self.circ_aperture, cmap, figsize)
         
     
     def look_up_table(self, look_up_table):
@@ -390,10 +315,7 @@ class FullPrecisionHologramLayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(FullPrecisionHologramLayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
         
         self.holo_size = holo_size
         self.height_constraint_max = torch.tensor(height_constraint_max, device=self.device)
@@ -413,42 +335,7 @@ class FullPrecisionHologramLayer(HologramLayer):
                   figsize                 = (4,4)):
         """  visualize the thickness of the hologram
         """
-        
-        def circle_mask(input_tensor, radius=None):
-            H, W = input_tensor.shape
-            # Set default radius if not provided
-            if radius is None:
-                radius = min(H, W) / 2
-            # Create a meshgrid
-            y, x = torch.meshgrid(torch.arange(0, H), torch.arange(0, W))
-            
-            # Compute distance to center
-            center_y, center_x = H / 2, W / 2
-            dist = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            # Create the mask
-            mask = (dist <= radius).float()
-            return mask.detach().cpu().numpy()  
-        
-        if self.circ_aperture == True:
-            mask = circle_mask(self.height_map)
-            thickness = self.height_map.detach().cpu().numpy() * mask
-        else:
-            thickness = self.height_map.detach().cpu().numpy()
-        
-        if figsize is not None:
-            fig = plt.figure(figsize=figsize)
-            
-        # First subplot: 2D plot
-        plt.subplot(1, 1, 1)
-        _im1 = plt.imshow(thickness, cmap=cmap)  # use colormap 'viridis'
-        plt.title('2D Height Map of Hologram')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-
-        # Show the plots
-        add_colorbar(_im1)
-        plt.tight_layout()
-        plt.show()
+        visualize_height_map(self.height_map, self.circ_aperture, cmap, figsize)
     
     def build_weight_height_map(self):
         height, width = self.holo_size[0], self.holo_size[1]
@@ -486,10 +373,7 @@ class PSQuantizedHologramLayer(HologramLayer):
                  device         : torch.device = None) -> None:
         super(PSQuantizedHologramLayer, self).__init__()
         
-        if device is None:
-            self.device     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            self.device     = device
+        self.device = get_default_device(device)
             
         self.holo_size = holo_size
         self.holo_level = holo_level
@@ -514,42 +398,7 @@ class PSQuantizedHologramLayer(HologramLayer):
                   figsize                 = (4,4)):
         """  visualize the thickness of the hologram
         """
-        
-        def circle_mask(input_tensor, radius=None):
-            H, W = input_tensor.shape
-            # Set default radius if not provided
-            if radius is None:
-                radius = min(H, W) / 2
-            # Create a meshgrid
-            y, x = torch.meshgrid(torch.arange(0, H), torch.arange(0, W))
-            
-            # Compute distance to center
-            center_y, center_x = H / 2, W / 2
-            dist = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            # Create the mask
-            mask = (dist <= radius).float()
-            return mask.detach().cpu().numpy()  
-        
-        if self.circ_aperture == True:
-            mask = circle_mask(self.height_map)
-            thickness = self.height_map.detach().cpu().numpy() * mask
-        else:
-            thickness = self.height_map.detach().cpu().numpy()
-        
-        if figsize is not None:
-            fig = plt.figure(figsize=figsize)
-            
-        # First subplot: 2D plot
-        plt.subplot(1, 1, 1)
-        _im1 = plt.imshow(thickness, cmap=cmap)  # use colormap 'viridis'
-        plt.title('2D Height Map of Hologram')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-
-        # Show the plots
-        add_colorbar(_im1)
-        plt.tight_layout()
-        plt.show()
+        visualize_height_map(self.height_map, self.circ_aperture, cmap, figsize)
 
 
     def build_weight_height_map(self):
